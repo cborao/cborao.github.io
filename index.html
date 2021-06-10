@@ -1,10 +1,285 @@
 <!DOCTYPE html>
-<html>
-	<body>
-		<h1> THIS IS THE CESAR BORAO PAGE </h1>
-		<p> This is the first paragraph </p>
-	</body>
-</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LoVisto</title>
+</head>
 
+<header>
+    <!--  Banner  -->
+    <div id="banner" class="jumbotron jumbotron-fluid bg-cover text-white"
+         style="background: url({% static 'LoVisto/images/banner.png' %})">
+        <div class="container py-5 text-center">
+            <h1 class="display-4 font-weight-bold">Lo Visto</h1>
+            <p class="font-italic mb-0">Aporta, comenta y comparte contenido de internet.</p>
+            <p class="font-italic">Autor:
+                <a href="https://gitlab.etsit.urjc.es/c.borao.2017" class="text-white">
+                    <u>César Borao Moratinos</u>
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Menú de navegación -->
+    <nav id="menu" class="navbar navbar-expand-md navbar-dark bg-dark">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                    {% block navbar %}
+                        <!-- Items que aparecen en el menú -->
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/info">Información</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/all">Todo</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/?format=xml">Descarga como fichero XML</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/?format=json">Descarga como fichero
+                                JSON</a>
+                        </li>
+
+                        {% if request.user.is_authenticated %}
+                            <li class="nav-item">
+                                <form method="post" action='{{ page }}#{{ content.resource }}'>
+                                    <input class="btn btn-dark" type="submit" name="action" value="Cambiar modo">
+                                    <input type="hidden" name="resource" value="{{ content.resource}}">
+                                </form>
+                            </li>
+                        {% endif %}
+                    {% endblock %}
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Cuerpo de la pantilla: siempre se divide en dos columnas (a no ser que el tamaño de la pantalla sea small): una "body con contenidos
+     diferentes según la página, y otra con las funciones de login y del usuario -->
+<body>
+    <div class="row">
+
+        <!-- Diferente para cada página -->
+        {% block body %}
+        <!-- Listado de las últimas 10 aportaciones -->
+            <div id="aportaciones" class="col-lg-9 col-md-7 col-sm-12">
+
+                {% for content in contents %}
+                <div class="panel panel-primary">
+                    <div class="panel-heading text-center">
+                        <h2><a name='{{ content.resource }}'>{{ content.title }}</a></h2>
+                    </div>
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <p class="description">
+                                    {{ content.description }}
+                                </p>
+                            </li>
+                            <li class="list-group-item text-center">
+                                <!-- usarmos autoescape para que interprete el texto de la info en HTML-->
+                                {% autoescape off %}
+                                    {{ content.info }}
+                                {% endautoescape %}
+                            </li>
+                            <li class="list-group-item text-center">
+                                <p class="datos">
+                                    Contribución de {{ content.user }}, enviada en {{ content.date }},
+                                    {{ content.comments}} comentarios,
+                                </p>
+                                <p class="votos">Positivos: {{ content.likes }}. Negativos: {{ content.dislikes }}</p>
+                                <a class="btn btn-primary" href='{{ content.resource }}' role="button">más info</a></p>
+                            </li>
+                            {% if request.user.is_authenticated %}
+                                <li class="list-group-item text-center">
+                                    {% for vote in votes %}
+                                        {% if vote.content == content and vote.user == request.user.username %}
+                                            {% if vote.decision == 1 %}
+                                            <div class="center-text p-3 mb-40 bg-success text-white">Has votado like</div>
+                                            {% elif vote.decision == -1 %}
+                                            <div class="p-3 mb-2 bg-danger text-white">Has votado dislike</div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    <p class="center-text">
+                                        <form method="post" action='{{ page }}#{{ content.resource }}'>
+                                            <input type="submit" name="action" value="like" class="btn btn-outline-success"
+                                                   role="button">
+                                            <input type="submit" name="action" value="dislike" class="btn btn-outline-danger"
+                                                   role="button">
+                                            <input type="hidden" name="resource" value="{{ content.resource}}">
+                                        </form>
+                                    </p>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endblock %}
+
+        <!-- Bloque con las funcionalidades de login y de usuario-->
+        {% block loggedservices %}
+            <div class="col-lg-3 col-md-5 col-sm-12">
+                <div class="container-fluid pt-3" style="padding-bottom: 5%">
+
+                    <!-- Bloque con las funcionalidades de login-->
+                    {% block login %}
+                        {% if request.user.is_authenticated %}
+                            <form method="POST" action="/logout">
+                                <h6>Has iniciado sesión como {{ request.user.username }}.</h6><input type="submit" name="action"
+                                                                                                     value="logout"
+                                                                                                     class="btn btn-outline-dark btn-rounded"/>
+                                <input type='hidden' name='redirurl' value='{{ page }}'>
+                            </form>
+                        {% else %}
+                            <div class="container-fluid pt-3">
+                                <div class="card border-secondary">
+                                    <div class="card-header bg-secondary text-white text-center">
+                                        Inicio de sesión
+                                    </div>
+                                    <div class="card-body">
+                                        {% csrf_token %}
+                                        <form class="justify-content-center" id="login" method="POST"
+                                              action="/login_user">
+                                            <div class="form-group">
+                                                <label class="sr-only">Usuario</label>
+                                                <input type='text' class="form-control" name='username'>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="sr-only">Contraseña</label>
+                                                <input type='text' class="form-control" name='password'>
+                                            </div>
+                                            <input type='hidden' name='redirurl' value='{{ page }}'>
+                                            <button type="submit" name="action" value="login"
+                                                    class="btn btn-outline-dark btn-rounded">login
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        {% endif %}
+                    {% endblock %}
+                </div>
+
+                 <!-- Bloque con las funcionalidades de usuario-->
+                {% block user %}
+                    {% if request.user.is_authenticated %}
+                        {% csrf_token %}
+                        <div class="container-fluid pt-3">
+                            <div class="card border-secondary text-center">
+                                <div class="card-header bg-secondary text-white">
+                                    Tu cuenta
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text">¡Bienvenido de nuevo {{ request.user.username }}! En total se han añadido
+                                        más de {{ contents.count }} contenidos a la página. Puedes seguir subiendo más contenido,
+                                        comentar los aportes o consultar tu página de usuario.</p>
+                                    <a class="user_link btn btn-outline-dark btn-rounded" href='/user'>Ir a la página de usuario</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="container-fluid pt-3">
+                            <div class="card border-secondary">
+                                <div class="card-header bg-secondary text-white text-center">
+                                    Añade nuevo contenido
+                                </div>
+                                <div class="card-body">
+                                    <form class="justify-content-center" id="addcontent" method="POST" action="#">
+                                        <div class="form-group">
+                                            <label class="sr-only">Título</label>
+                                            <input type='text' class="form-control" name='title'>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="sr-only">Descripción</label>
+                                            <input type='text' class="form-control" name='description'>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="sr-only">Url</label>
+                                            <input type='text' class="form-control" name='url'>
+                                        </div>
+                                        <button class="text-center btn btn-outline-dark btn-rounded" name="action" value="Add content"
+                                                type="submit">Añadir
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="container-fluid pt-3">
+                            <div class="card text-center border-secondary">
+                                <div class="card-header bg-secondary text-white">
+                                    Tus últimas aportaciones
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    {% for usercontent in usercontents %}
+                                    <li class="list-group-item">
+                                        <p class="resumida"><a href='{{ usercontent.resource }}'>{{ usercontent.title }}</a></p>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endblock %}
+            </div>
+        {% endblock %}
+    </div>
+</body>
+
+
+<!-- Footer -->
+<footer id="web_footer" class="bg-dark text-center text-white">
+    <div class="container p-4">
+        <section class="page_end">
+            <div class="row bg-dark">
+                <!-- Enlace a los tres últimos sitios -->
+                <div class="text-center">
+                    Esta aplicación enlaza a:
+                    <ul class=" p-3 list-unstyled mb-0">
+                        {% for lastsite in lastsites %}
+                            <li>
+                                <a href="http://{{ lastsite.site }}" class="text-white">{{ lastsite.site }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    y otros muchos sitios
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Información de Copyright -->
+    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+        © 2021 Copyright:
+        <a class="text-white" href="https://gitlab.etsit.urjc.es/c.borao.2017">César Borao Moratinos</a>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+        crossorigin="anonymous"></script>
+</html>
 
 

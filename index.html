@@ -10,18 +10,21 @@
 </head>
 
 <header>
-    <div class="container">
-        <div class="row">
-            <div class="col-sm">
-                <img src="images/cesar.jpg" class="rounded-lg">
-            </div>
-            <div class="col-sm">
-                This is the description
-            </div>
-
+    <!--  Banner  -->
+    <div id="banner" class="jumbotron jumbotron-fluid bg-cover text-white"
+         style="background: url({% static 'LoVisto/images/banner.png' %})">
+        <div class="container py-5 text-center">
+            <h1 class="display-4 font-weight-bold">Lo Visto</h1>
+            <p class="font-italic mb-0">Aporta, comenta y comparte contenido de internet.</p>
+            <p class="font-italic">Autor:
+                <a href="https://gitlab.etsit.urjc.es/c.borao.2017" class="text-white">
+                    <u>César Borao Moratinos</u>
+                </a>
+            </p>
         </div>
     </div>
 
+    <!-- Menú de navegación -->
     <nav id="menu" class="navbar navbar-expand-md navbar-dark bg-dark">
         <div class="container-fluid">
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -31,7 +34,7 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+               <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="/curriculum">Curriculum</a>
@@ -45,15 +48,13 @@
                     <li class="nav-item">
                         <a class="nav-link active" aria-current="page" href="/Curriculum">Personal projects</a>
                     </li>
-
-
-                </ul>
+               </ul>
             </div>
         </div>
     </nav>
 </header>
 
 <body>
-		<h1>Ac</h1>
+
 </body>
 </html>
